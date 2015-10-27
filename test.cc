@@ -85,6 +85,10 @@ class Step : ActivationCounter
 		Step( Activator a, Deactivator d )
 				: activation( a ), deactivation( d ) {}
 
+		template< typename Activator >
+		Step( Activator a )
+				: activation( a ), deactivation( []{} ) {}
+
 		void activate() const { activation(); }
 		void rollback() const { deactivation(); }
 };
@@ -101,16 +105,28 @@ try
 				[]{ std::cout << "Lambda doit" << std::endl; },
 				[]{ std::cout << "Lambda undo" << std::endl; }
 			},
+
 			Step1(),
 			Step2(),
 			Step3(),
 			Step4(),
+
 			Step
 			{
-				[]{ std::cout << "Penultimate step" << std::endl; throw MyException(); },
+				[]{ std::cout << "Penultimate step" << std::endl; },
 				[]{ std::cout << "Penultimate undo" << std::endl; }
 			},
-			FailingStep(),
+
+			Step
+			{
+				[]
+				{
+					std::cout << "Should I die?" << std::endl;
+					std::string input;
+					std::cin >> input;
+					if( input == "yes" ) throw MyException();
+				}
+			},
 	};
 }
 catch( const std::exception &ex )
