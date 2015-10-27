@@ -12,7 +12,7 @@ namespace Alepha
 		public:
 			explicit inline TransactionStep( Step &step ) : p( &step ) { step.activate(); }
 
-			~TransactionStep()
+			inline ~TransactionStep()
 			{
 				this->p->rollback();
 			}
@@ -46,14 +46,13 @@ namespace Alepha
 
 	class Transaction : boost::noncopyable
 	{
-		private:
-			std::array< std::uint8_t, 16 * sizeof( void * ) > impl_buffer;
 
 		public:
 			template< typename ... Steps >
 			explicit inline
 			Transaction( Steps ... steps )
 			{
+				std::array< std::uint8_t, sizeof...( Steps ) * sizeof( void * ) > impl_buffer;
 				new (impl_buffer.begin()) TransactionInternal< Steps... >( steps... );
 			}
 	};
